@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강대기숙사 온라인 채팅</title>
+    <title>채팅</title>
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #f7f7f7;
             margin: 0;
         }
         .container {
@@ -22,19 +22,21 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
         }
         .hidden {
             display: none;
         }
         #chat-box {
-            width: 320px;
+            width: 100%;
             height: 500px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 10px;
             overflow-y: scroll;
             margin-bottom: 10px;
-            padding: 10px;
-            background-color: #fafafa;
+            padding: 15px;
+            background-color: #f9f9f9;
         }
         .back-btn {
             align-self: flex-start;
@@ -49,11 +51,11 @@
             cursor: pointer;
             background-color: #007bff;
             color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 8px 10px;
+            border-radius: 8px;
         }
         .admin-menu-btn {
-            right: 80px;
+            right: 90px;
             background-color: #ff6600;
         }
         .menu {
@@ -66,7 +68,7 @@
             border: 1px solid #ccc;
             background-color: #fff;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
         .menu-item {
@@ -74,18 +76,14 @@
             cursor: pointer;
             color: #333;
         }
-        .menu-subitem {
-            margin-left: 10px;
-            cursor: pointer;
-        }
         .mention {
             color: blue;
         }
         .private-message {
             background-color: darkblue;
             color: white;
-            padding: 5px;
-            border-radius: 5px;
+            padding: 8px;
+            border-radius: 8px;
         }
         .admin {
             color: orange;
@@ -102,12 +100,12 @@
         button:hover {
             background-color: #0056b3;
         }
-        input[type="text"], input[type="password"] {
-            width: 80%;
-            padding: 10px;
+        input[type="text"], input[type="password"], input[type="color"] {
+            width: 100%;
+            padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 8px;
         }
         #color-options {
             display: none;
@@ -129,7 +127,7 @@
 </head>
 <body>
     <div class="container" id="main-container">
-        <h1>강대기숙사 온라인 채팅</h1>
+        <h1>온라인 채팅</h1>
         <button id="login-btn">로그인</button>
         <button id="signup-btn">회원 가입</button>
     </div>
@@ -171,9 +169,8 @@
             <div class="menu-item" id="about">웹페이지 설명</div>
             <div class="menu-item" id="color-select">채팅창 색</div>
             <div id="color-options">
-                <div class="menu-subitem" id="color-black">검정색</div>
-                <div class="menu-subitem" id="color-white">하얀색</div>
-                <div class="menu-subitem" id="color-blue">하늘색</div>
+                <input type="color" id="custom-color" value="#ffffff">
+                <label for="custom-color">사용자 정의 색상</label>
             </div>
             <div class="menu-item" id="private-toggle">개인 메시지만 보기</div>
             <div class="menu-item hidden" id="all-messages-toggle">모든 메시지 보기</div>
@@ -184,11 +181,11 @@
             <div class="menu-item" id="delete-latest">가장 최근 채팅 삭제</div>
         </div>
         <div id="chat-box"></div>
-        <input type="text" id="chat-input" placeholder="메시지를 입력하세요 (@nickname; 메시지 형식으로 개인 전송)">
+        <input type="text" id="chat-input" placeholder="메시지를 입력하세요 (@username; 메시지 형식으로 개인 전송)">
         <button id="send-message">전송</button>
     </div>
 
-    <div id="version">v.1.0.0(beta)</div>
+    <div id="version">v.1.0.1</div>
 
     <script type="module">
         // Firebase 초기화
@@ -225,8 +222,6 @@
         const chatBox = document.getElementById('chat-box');
         const chatInput = document.getElementById('chat-input');
         const sendMessage = document.getElementById('send-message');
-        const loginBack = document.getElementById('login-back');
-        const signupBack = document.getElementById('signup-back');
         const menuBtn = document.getElementById('menu-btn');
         const menu = document.getElementById('menu');
         const adminMenuBtn = document.getElementById('admin-menu-btn');
@@ -236,9 +231,7 @@
         const about = document.getElementById('about');
         const colorSelect = document.getElementById('color-select');
         const colorOptions = document.getElementById('color-options');
-        const colorBlack = document.getElementById('color-black');
-        const colorWhite = document.getElementById('color-white');
-        const colorBlue = document.getElementById('color-blue');
+        const customColor = document.getElementById('custom-color');
         const deleteAllChats = document.getElementById('delete-all');
         const deleteLatestChat = document.getElementById('delete-latest');
         const privateToggle = document.getElementById('private-toggle');
@@ -248,12 +241,12 @@
         let showPrivateMessages = false;
 
         // 뒤로가기 버튼 기능
-        loginBack.addEventListener('click', () => {
+        document.getElementById('login-back').addEventListener('click', () => {
             loginContainer.classList.add('hidden');
             mainContainer.classList.remove('hidden');
         });
 
-        signupBack.addEventListener('click', () => {
+        document.getElementById('signup-back').addEventListener('click', () => {
             signupContainer.classList.add('hidden');
             mainContainer.classList.remove('hidden');
         });
@@ -279,29 +272,22 @@
             adminMenu.style.display = adminMenu.style.display === 'none' ? 'flex' : 'none';
         });
 
-        // 채팅창 색상 드롭다운 메뉴 열기 기능
-        colorSelect.addEventListener('click', () => {
-            colorOptions.style.display = colorOptions.style.display === 'none' ? 'flex' : 'none';
+        // 사용자 정의 채팅창 색상 설정
+        customColor.addEventListener('input', () => {
+            const selectedColor = customColor.value;
+            chatBox.style.backgroundColor = selectedColor;
+            chatBox.style.color = getTextColorBasedOnBg(selectedColor);
         });
 
-        // 채팅창 색상 변경 기능
-        colorBlack.addEventListener('click', () => {
-            chatBox.style.backgroundColor = 'black';
-            chatBox.style.color = 'white';
-            colorOptions.style.display = 'none';
-        });
-
-        colorWhite.addEventListener('click', () => {
-            chatBox.style.backgroundColor = 'white';
-            chatBox.style.color = 'black';
-            colorOptions.style.display = 'none';
-        });
-
-        colorBlue.addEventListener('click', () => {
-            chatBox.style.backgroundColor = 'lightblue';
-            chatBox.style.color = 'black';
-            colorOptions.style.display = 'none';
-        });
+        // 텍스트 색상 대비 자동 변경
+        function getTextColorBasedOnBg(bgColor) {
+            const rgb = parseInt(bgColor.slice(1), 16);
+            const r = (rgb >> 16) & 0xff;
+            const g = (rgb >> 8) & 0xff;
+            const b = (rgb >> 0) & 0xff;
+            const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            return luma > 128 ? 'black' : 'white';
+        }
 
         // 회원가입 처리
         signupSubmit.addEventListener('click', async () => {
@@ -383,7 +369,7 @@
                         adminMenuBtn.classList.remove('hidden');
                     }
 
-                    loadChat(currentNickname);
+                    loadChat();
                 } else {
                     alert('아이디 또는 비밀번호가 잘못되었습니다.');
                 }
@@ -392,20 +378,7 @@
             });
         });
 
-        // 엔터 키로 메시지 전송 및 로그인
-        loginContainer.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                loginSubmit.click();
-            }
-        });
-
-        chatContainer.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage.click();
-            }
-        });
-
-        // 채팅 메시지 전송 (일반 및 개인 메시지 통합)
+        // 채팅 메시지 전송
         sendMessage.addEventListener('click', () => {
             const message = chatInput.value.trim();
             if (!message) return;
@@ -547,9 +520,10 @@
             alert(`
             - 닉네임 멘션: @nickname 형태로 멘션할 수 있으며, 멘션된 닉네임은 파란색으로 표시됩니다.
             - 개인 전송: @nickname; 'content' 형식으로 보내면 해당 사용자에게만 메시지가 전달됩니다.
-            - 채팅창 색 변경: 메뉴에서 채팅창 색을 검정색, 하얀색, 하늘색 중에서 선택할 수 있습니다.
+            - 채팅창 색 변경: 메뉴에서 채팅창 색을 검정색, 하얀색, 하늘색 또는 사용자 정의 색상으로 변경할 수 있습니다.
             - 개인 메시지만 보기: 메뉴에서 개인 메시지만 보거나 모든 메시지를 볼 수 있는 옵션이 있습니다.
             - 관리자 기능: 관리자 메뉴를 통해 모든 채팅을 삭제하거나 최근 채팅 하나만 삭제할 수 있습니다.
+            - 본 웹페이지는 장정은 수령 동지와 소통하기 위해서 만들어졌습니다.
             `);
         });
 
@@ -572,11 +546,6 @@
             adminMenuBtn.classList.add('hidden'); // 관리자 메뉴 숨기기
         });
 
-        // 웹페이지 설명
-        about.addEventListener('click', () => {
-            alert('본 웹페이지는 장정은 수령동지와 소통하기 위해서 만들어졌습니다.');
-        });
-
         // 6개월이 지난 계정 삭제
         function deleteOldAccounts() {
             const usersRef = ref(database, 'users');
@@ -595,3 +564,5 @@
     </script>
 </body>
 </html>
+
+            
