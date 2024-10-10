@@ -115,7 +115,7 @@
         #user-list {
             position: absolute;
             right: 10px;
-            top: 40px;
+            bottom: 20px;
             width: 200px;
             background-color: white;
             padding: 10px;
@@ -134,6 +134,14 @@
         .highlight {
             font-weight: bold;
             color: #ff0000;
+        }
+        #signup-terms {
+            text-align: left;
+            margin-top: 15px;
+        }
+        .view-details {
+            cursor: pointer;
+            color: #007bff;
         }
     </style>
 </head>
@@ -158,6 +166,17 @@
         <input type="text" id="signup-id" placeholder="아이디">
         <input type="password" id="signup-password" placeholder="비밀번호">
         <input type="text" id="signup-nickname" placeholder="닉네임">
+        <div id="signup-terms">
+            <input type="checkbox" id="accept-all"> 모든 조건에 동의합니다.<br>
+            <input type="checkbox" id="term1"> 조건 1 <span class="view-details" data-details="조건(1) 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.">[자세히]</span><br>
+            <input type="checkbox" id="term2"> 조건 2 <span class="view-details" data-details="조건(2) 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.">[자세히]</span><br>
+            <input type="checkbox" id="term3"> 조건 3 <span class="view-details" data-details="조건(3) 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.">[자세히]</span><br>
+            <input type="checkbox" id="term4"> 조건 4 <span class="view-details" data-details="조건(4) 인터넷 윤리를 지키며 사용하십시오.">[자세히]</span><br>
+            <input type="checkbox" id="term5"> 조건 5 <span class="view-details" data-details="조건(5) 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.">[자세히]</span><br>
+            <input type="checkbox" id="term6"> 조건 6 <span class="view-details" data-details="조건(6) 본인은 이 모든 조건에 동의하며 건전하고 합법적으로 본 웹페이지를 사용할 것을 약속합니다.">[자세히]</span><br>
+            <input type="checkbox" id="term7"> 조건 7 <span class="view-details" data-details="조건(7) 모든 계정은 6개월 뒤 소멸됩니다.">[자세히]</span><br>
+            <input type="checkbox" id="term8"> 조건 8 <span class="view-details" data-details="조건(8) 사용자의 개인정보가 수집될 수 있습니다. 단 이 정보를 거래하지는 않습니다.">[자세히]</span><br>
+        </div>
         <button id="signup-submit">회원 가입</button>
     </div>
 
@@ -208,6 +227,8 @@
         let currentNickname = '';
         let currentUserId = '';
         let isAdmin = false;
+        let isNoticeMode = false;
+        let noticeMessage = null;
 
         // 요소 가져오기
         const mainContainer = document.getElementById('main-container');
@@ -231,11 +252,12 @@
         const deleteNotice = document.getElementById('delete-notice');
         const deleteAllChats = document.getElementById('delete-all');
         const deleteLatestChat = document.getElementById('delete-latest');
+        const userList = document.getElementById('user-list');
 
-        let showPrivateMessages = false;
-        let isDarkMode = false;
-        let isNoticeMode = false;
-        let noticeMessage = null;
+        // 다크 모드 토글
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
 
         // 로그인 및 회원가입 버튼 기능
         loginBtn.addEventListener('click', () => {
@@ -259,14 +281,7 @@
             mainContainer.classList.remove('hidden');
         });
 
-        // 다크 모드 토글
-        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('dark-mode-toggle').textContent = isDarkMode ? '라이트 모드' : '다크 모드';
-        });
-
-        // 공지 모드 활성화 및 비활성화
+        // 공지 모드 토글
         noticeToggle.addEventListener('click', () => {
             isNoticeMode = !isNoticeMode;
             alert(isNoticeMode ? '공지 모드 활성화' : '공지 모드 비활성화');
@@ -289,6 +304,7 @@
             if (!message) return;
 
             const messageElement = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
 
             if (isNoticeMode) {
                 if (noticeMessage) {
@@ -298,9 +314,41 @@
                 noticeMessage = messageElement;
             }
 
-            messageElement.textContent = message;
+            messageElement.innerHTML = `<strong>${currentNickname}:</strong> ${message} <span class="timestamp">${timestamp}</span>`;
             chatBox.appendChild(messageElement);
             chatInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // 로그인 처리
+        loginSubmit.addEventListener('click', () => {
+            const id = document.getElementById('login-id').value;
+            const password = document.getElementById('login-password').value;
+
+            const usersRef = ref(database, 'users/' + id);
+            get(usersRef).then((snapshot) => {
+                if (snapshot.exists() && snapshot.val().password === password) {
+                    currentNickname = snapshot.val().nickname;
+                    currentUserId = id;
+                    isAdmin = (id === 'admin');
+
+                    alert(`환영합니다. ${currentNickname}님`);
+                    loginContainer.classList.add('hidden');
+                    chatContainer.classList.remove('hidden');
+
+                    if (isAdmin) {
+                        adminMenuBtn.classList.remove('hidden');
+                    }
+
+                    loadChat();
+                    updateUserList(['사용자1', '사용자2', '관리자']); // 사용자 목록 업데이트
+                    userList.classList.remove('hidden');
+                } else {
+                    alert('아이디 또는 비밀번호가 잘못되었습니다.');
+                }
+            }).catch((error) => {
+                alert('로그인 실패: ' + error.message);
+            });
         });
 
         // 채팅 로드 및 메시지 업데이트
@@ -312,21 +360,24 @@
                     const messageData = childSnapshot.val();
                     const messageElement = document.createElement('div');
 
-                    if (messageData.isPrivate) {
-                        const isSender = messageData.user === currentUserId;
-                        const isReceiver = messageData.targetUserId === currentUserId;
-                        if (!isSender && !isReceiver) return;
-
-                        messageElement.classList.add('private-message');
-                    }
-
                     const timestamp = new Date(messageData.timestamp);
                     const formattedTime = `${timestamp.getFullYear()}/${(timestamp.getMonth() + 1).toString().padStart(2, '0')}/${timestamp.getDate().toString().padStart(2, '0')} ${timestamp.getHours().toString().padStart(2, '0')}:${timestamp.getMinutes().toString().padStart(2, '0')}`;
 
-                    messageElement.innerHTML = `<strong class="${messageData.user === 'admin' ? 'admin' : ''}">${messageData.nickname}:</strong> ${messageData.message} <span class="timestamp">${formattedTime}</span>`;
+                    messageElement.innerHTML = `<strong>${messageData.nickname}:</strong> ${messageData.message} <span class="timestamp">${formattedTime}</span>`;
                     chatBox.appendChild(messageElement);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        // 사용자 목록 업데이트
+        function updateUserList(usernames) {
+            userList.innerHTML = '<h3>현재 접속자</h3>';
+            usernames.forEach(username => {
+                const userElement = document.createElement('div');
+                userElement.classList.add('username');
+                userElement.textContent = username;
+                userList.appendChild(userElement);
             });
         }
 
@@ -356,98 +407,6 @@
                         alert('최근 채팅 삭제 실패: ' + error.message);
                     });
                 }
-            });
-        });
-
-        // 로그인된 사용자 표시
-        function updateUserList(usernames) {
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = '<h3>현재 접속자</h3>';
-            usernames.forEach(username => {
-                const userElement = document.createElement('div');
-                userElement.classList.add('username');
-                userElement.textContent = username;
-                userList.appendChild(userElement);
-            });
-            userList.classList.remove('hidden');
-        }
-
-        // 예시로 임시 사용자 목록 업데이트
-        updateUserList(['사용자1', '사용자2', '관리자']);
-
-        // 회원가입 처리
-        signupSubmit.addEventListener('click', async () => {
-            const id = document.getElementById('signup-id').value;
-            const password = document.getElementById('signup-password').value;
-            const nickname = document.getElementById('signup-nickname').value;
-
-            const usersRef = ref(database, 'users');
-            get(usersRef).then((snapshot) => {
-                let idExists = false;
-                let nicknameExists = false;
-
-                snapshot.forEach((childSnapshot) => {
-                    const userData = childSnapshot.val();
-                    if (childSnapshot.key === id) {
-                        idExists = true;
-                    }
-                    if (userData.nickname === nickname) {
-                        nicknameExists = true;
-                    }
-                });
-
-                if (idExists) {
-                    alert('이미 존재하는 아이디입니다.');
-                    return;
-                }
-
-                if (nicknameExists) {
-                    alert('이미 존재하는 닉네임입니다.');
-                    return;
-                }
-
-                set(ref(database, 'users/' + id), {
-                    password: password,
-                    nickname: nickname,
-                    createdAt: Date.now(),
-                }).then(() => {
-                    alert('회원가입 성공');
-                    signupContainer.classList.add('hidden');
-                    loginContainer.classList.remove('hidden');
-                }).catch((error) => {
-                    alert('회원가입 실패: ' + error.message);
-                });
-            }).catch((error) => {
-                alert('회원가입 실패: ' + error.message);
-            });
-        });
-
-        // 로그인 처리
-        loginSubmit.addEventListener('click', () => {
-            const id = document.getElementById('login-id').value;
-            const password = document.getElementById('login-password').value;
-
-            const usersRef = ref(database, 'users/' + id);
-            get(usersRef).then((snapshot) => {
-                if (snapshot.exists() && snapshot.val().password === password) {
-                    currentNickname = snapshot.val().nickname;
-                    currentUserId = id;
-                    isAdmin = (id === 'admin');
-
-                    alert(`환영합니다. ${currentNickname}님`);
-                    loginContainer.classList.add('hidden');
-                    chatContainer.classList.remove('hidden');
-
-                    if (isAdmin) {
-                        adminMenuBtn.classList.remove('hidden');
-                    }
-
-                    loadChat();
-                } else {
-                    alert('아이디 또는 비밀번호가 잘못되었습니다.');
-                }
-            }).catch((error) => {
-                alert('로그인 실패: ' + error.message);
             });
         });
 
