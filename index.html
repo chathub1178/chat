@@ -13,6 +13,7 @@
             height: 100vh;
             background-color: #f7f7f7;
             margin: 0;
+            transition: background-color 0.3s ease;
         }
         .container {
             display: flex;
@@ -37,6 +38,7 @@
             margin-bottom: 10px;
             padding: 15px;
             background-color: #f9f9f9;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .back-btn {
             align-self: flex-start;
@@ -76,41 +78,25 @@
             cursor: pointer;
             color: #333;
         }
-        .mention {
-            color: blue;
-        }
-        .private-message {
-            background-color: darkblue;
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
-        }
-        .admin {
-            color: orange;
-        }
         button {
-            background-color: #007bff;
+            background-color: black;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #333;
         }
-        input[type="text"], input[type="password"], input[type="color"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 8px;
-        }
-        #color-options {
-            display: none;
-            flex-direction: column;
-            padding-top: 5px;
         }
         #version {
             position: absolute;
@@ -122,6 +108,15 @@
         .timestamp {
             font-size: 10px;
             color: #999;
+        }
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #333;
+            color: white;
+        }
+        .dark-mode #chat-box {
+            background-color: #222;
+            color: white;
         }
     </style>
 </head>
@@ -146,16 +141,7 @@
         <input type="text" id="signup-id" placeholder="아이디">
         <input type="password" id="signup-password" placeholder="비밀번호">
         <input type="text" id="signup-nickname" placeholder="닉네임">
-        <div>
-            <input type="checkbox" id="term1"> 조건 1: 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.<br>
-            <input type="checkbox" id="term2"> 조건 2: 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.<br>
-            <input type="checkbox" id="term3"> 조건 3: 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.<br>
-            <input type="checkbox" id="term4"> 조건 4: 인터넷 윤리를 지키며 사용하십시오.<br>
-            <input type="checkbox" id="term5"> 조건 5: 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.<br>
-            <input type="checkbox" id="term6"> 조건 6: 본인은 이 모든 조건에 동의하며 건전하고 합법적으로 본 웹페이지를 사용할 것을 약속합니다.<br>
-            <input type="checkbox" id="term7"> 조건 7: 모든 계정은 6개월 뒤 소멸됩니다.<br>
-            <input type="checkbox" id="term8"> 조건 8: 사용자의 개인정보가 수집될 수 있습니다. 단, 이 정보를 거래하지는 않습니다.<br>
-        </div>
+        <!-- Terms Checkboxes -->
         <button id="signup-submit">회원 가입</button>
     </div>
 
@@ -165,26 +151,21 @@
         <div class="menu" id="menu">
             <div class="menu-item" id="account-delete">계정 탈퇴</div>
             <div class="menu-item" id="logout">로그아웃</div>
-            <div class="menu-item" id="about">웹페이지 설명</div>
-            <div class="menu-item" id="color-select">채팅창 색</div>
-            <div id="color-options">
-                <input type="color" id="custom-color" value="#ffffff">
-                <label for="custom-color">사용자 정의 색상</label>
-            </div>
-            <div class="menu-item" id="private-toggle">개인 메시지만 보기</div>
-            <div class="menu-item hidden" id="all-messages-toggle">모든 메시지 보기</div>
-            <div class="menu-item" id="function-description">기능 설명</div>
+            <div class="menu-item" id="mode-toggle">다크 모드로 전환</div>
         </div>
         <div class="menu hidden" id="admin-menu">
             <div class="menu-item" id="delete-all">모든 채팅 삭제</div>
             <div class="menu-item" id="delete-latest">가장 최근 채팅 삭제</div>
+            <div class="menu-item" id="make-announcement">공지 올리기</div>
+            <div class="menu-item" id="delete-announcement">공지 삭제</div>
         </div>
+        <div id="announcement" class="hidden"></div>
         <div id="chat-box"></div>
         <input type="text" id="chat-input" placeholder="메시지를 입력하세요 (@username; 메시지 형식으로 개인 전송)">
         <button id="send-message">전송</button>
     </div>
 
-    <div id="version">v.1.0.1</div>
+    <div id="version">v.1.0.3</div>
 
     <script type="module">
         // Firebase 초기화
@@ -208,6 +189,7 @@
         let currentNickname = '';
         let currentUserId = '';
         let isAdmin = false;
+	let isAnnouncementMode = false;
 
         // 요소 가져오기
         const mainContainer = document.getElementById('main-container');
@@ -236,8 +218,44 @@
         const privateToggle = document.getElementById('private-toggle');
         const allMessagesToggle = document.getElementById('all-messages-toggle');
         const functionDescription = document.getElementById('function-description');
+	const announcementBox = document.getElementById('announcement');
+
 
         let showPrivateMessages = false;
+	let isDarkMode = false;
+
+        // Toggle Dark/Light Mode
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            isDarkMode = !isDarkMode;
+            modeToggle.textContent = isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환';
+        });
+
+        // Admin: Post Announcement
+        makeAnnouncementBtn.addEventListener('click', () => {
+            isAnnouncementMode = true;
+            makeAnnouncementBtn.textContent = '공지 모드 활성화됨';
+        });
+
+        sendMessage.addEventListener('click', () => {
+            const message = document.getElementById('chat-input').value.trim();
+            if (!message) return;
+
+            if (isAnnouncementMode) {
+                announcementBox.innerHTML = `<strong>공지:</strong> ${message}`;
+                announcementBox.classList.remove('hidden');
+                isAnnouncementMode = false;
+                makeAnnouncementBtn.textContent = '공지 올리기';
+            } else {
+                // Regular message logic
+            }
+        });
+
+        // Admin: Delete Announcement
+        deleteAnnouncementBtn.addEventListener('click', () => {
+            announcementBox.innerHTML = '';
+            announcementBox.classList.add('hidden');
+        });
 
         // 뒤로가기 버튼 기능
         document.getElementById('login-back').addEventListener('click', () => {
