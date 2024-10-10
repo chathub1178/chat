@@ -62,7 +62,7 @@
             right: 90px;
             background-color: #ff6600;
         }
-        .menu {
+        .menu, .admin-menu {
             position: absolute;
             top: 40px;
             right: 10px;
@@ -112,39 +112,12 @@
             border: 1px solid #ccc;
             border-radius: 8px;
         }
-        #user-list {
-            position: absolute;
-            right: 10px;
-            bottom: 20px;
-            width: 200px;
-            background-color: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            font-size: 14px;
-            text-align: left;
-        }
-        .username {
-            margin-bottom: 5px;
-        }
-        .timestamp {
-            font-size: 10px;
-            color: #999;
-        }
-        .highlight {
-            font-weight: bold;
-            color: #ff0000;
-        }
         #version {
             position: absolute;
             left: 10px;
             bottom: 10px;
             color: #777;
             font-size: 12px;
-        }
-        #function-description {
-            margin-top: 20px;
-            text-align: left;
         }
     </style>
 </head>
@@ -170,12 +143,14 @@
         <input type="password" id="signup-password" placeholder="비밀번호">
         <input type="text" id="signup-nickname" placeholder="닉네임">
         <div>
-            <input type="checkbox" id="accept-all"> 모든 조건에 동의합니다.<br>
-            <input type="checkbox" id="term1"> 조건 1 <span class="view-details" data-details="조건(1) 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.">[자세히]</span><br>
-            <input type="checkbox" id="term2"> 조건 2 <span class="view-details" data-details="조건(2) 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term3"> 조건 3 <span class="view-details" data-details="조건(3) 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term4"> 조건 4 <span class="view-details" data-details="조건(4) 인터넷 윤리를 지키며 사용하십시오.">[자세히]</span><br>
-            <input type="checkbox" id="term5"> 조건 5 <span class="view-details" data-details="조건(5) 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.">[자세히]</span><br>
+            <input type="checkbox" id="term1"> 조건 1: 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.<br>
+            <input type="checkbox" id="term2"> 조건 2: 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.<br>
+            <input type="checkbox" id="term3"> 조건 3: 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.<br>
+            <input type="checkbox" id="term4"> 조건 4: 인터넷 윤리를 지키며 사용하십시오.<br>
+            <input type="checkbox" id="term5"> 조건 5: 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.<br>
+            <input type="checkbox" id="term6"> 조건 6: 본인은 이 모든 조건에 동의하며 건전하고 합법적으로 본 웹페이지를 사용할 것을 약속합니다.<br>
+            <input type="checkbox" id="term7"> 조건 7: 모든 계정은 6개월 뒤 소멸됩니다.<br>
+            <input type="checkbox" id="term8"> 조건 8: 사용자의 개인정보가 수집될 수 있습니다. 단, 이 정보를 거래하지는 않습니다.<br>
         </div>
         <button id="signup-submit">회원 가입</button>
     </div>
@@ -183,13 +158,12 @@
     <div id="chat-container" class="container hidden">
         <div class="menu-btn" id="menu-btn">메뉴</div>
         <div class="admin-menu-btn hidden" id="admin-menu-btn">관리자 메뉴</div>
-        <div class="menu" id="menu">
+        <div class="menu hidden" id="menu">
             <div class="menu-item" id="dark-mode-toggle">다크 모드</div>
-            <div class="menu-item" id="account-delete">계정 탈퇴</div>
-            <div class="menu-item" id="logout">로그아웃</div>
+            <div class="menu-item" id="private-toggle">개인 메시지만 보기</div>
             <div class="menu-item" id="function-description">웹사이트 설명</div>
         </div>
-        <div class="menu hidden" id="admin-menu">
+        <div class="admin-menu hidden" id="admin-menu">
             <div class="menu-item" id="notice-toggle">공지 모드</div>
             <div class="menu-item" id="delete-notice">공지 삭제</div>
             <div class="menu-item" id="delete-all">모든 채팅 삭제</div>
@@ -198,10 +172,6 @@
         <div id="chat-box"></div>
         <input type="text" id="chat-input" placeholder="메시지를 입력하세요 (@username; 메시지 형식으로 개인 전송)">
         <button id="send-message">전송</button>
-    </div>
-
-    <div id="user-list" class="hidden">
-        <h3>현재 접속자</h3>
     </div>
 
     <div id="version">v.1.0.3</div>
@@ -253,7 +223,6 @@
         const deleteNotice = document.getElementById('delete-notice');
         const deleteAllChats = document.getElementById('delete-all');
         const deleteLatestChat = document.getElementById('delete-latest');
-        const userList = document.getElementById('user-list');
 
         // 다크 모드 토글
         document.getElementById('dark-mode-toggle').addEventListener('click', () => {
@@ -342,8 +311,6 @@
                     }
 
                     loadChat();
-                    updateUserList(['사용자1', '사용자2', '관리자']); // 사용자 목록 업데이트
-                    userList.classList.remove('hidden');
                 } else {
                     alert('아이디 또는 비밀번호가 잘못되었습니다.');
                 }
@@ -368,17 +335,6 @@
                     chatBox.appendChild(messageElement);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-
-        // 사용자 목록 업데이트
-        function updateUserList(usernames) {
-            userList.innerHTML = '<h3>현재 접속자</h3>';
-            usernames.forEach(username => {
-                const userElement = document.createElement('div');
-                userElement.classList.add('username');
-                userElement.textContent = username;
-                userList.appendChild(userElement);
             });
         }
 
@@ -440,5 +396,3 @@
     </script>
 </body>
 </html>
-
-            
