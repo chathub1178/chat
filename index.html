@@ -13,7 +13,6 @@
             height: 100vh;
             background-color: #f7f7f7;
             margin: 0;
-            transition: background-color 0.3s ease;
         }
         .container {
             display: flex;
@@ -25,7 +24,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-            transition: background-color 0.3s ease;
         }
         .hidden {
             display: none;
@@ -39,17 +37,12 @@
             margin-bottom: 10px;
             padding: 15px;
             background-color: #f9f9f9;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .back-btn {
             align-self: flex-start;
             margin-bottom: 10px;
             cursor: pointer;
             color: #007bff;
-            transition: color 0.3s ease;
-        }
-        .back-btn:hover {
-            color: #0056b3;
         }
         .menu-btn, .admin-menu-btn {
             position: absolute;
@@ -60,14 +53,10 @@
             color: white;
             padding: 8px 10px;
             border-radius: 8px;
-            transition: background-color 0.3s ease;
         }
         .admin-menu-btn {
             right: 90px;
             background-color: #ff6600;
-        }
-        .menu-btn:hover, .admin-menu-btn:hover {
-            background-color: #0056b3;
         }
         .menu {
             position: absolute;
@@ -81,16 +70,11 @@
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.3s ease;
         }
         .menu-item {
             margin: 5px 0;
             cursor: pointer;
             color: #333;
-            transition: color 0.3s ease;
-        }
-        .menu-item:hover {
-            color: #000;
         }
         .mention {
             color: blue;
@@ -105,28 +89,28 @@
             color: orange;
         }
         button {
-            background-color: black;
+            background-color: #007bff;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
-            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #333;
+            background-color: #0056b3;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="color"] {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 8px;
-            transition: border-color 0.3s ease;
         }
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: #007bff;
+        #color-options {
+            display: none;
+            flex-direction: column;
+            padding-top: 5px;
         }
         #version {
             position: absolute;
@@ -138,39 +122,6 @@
         .timestamp {
             font-size: 10px;
             color: #999;
-        }
-        /* Dark Mode Styles */
-        .dark-mode {
-            background-color: #333;
-            color: white;
-        }
-        .dark-mode .container {
-            background-color: #444;
-        }
-        .dark-mode #chat-box {
-            background-color: #222;
-            color: white;
-        }
-        .dark-mode input[type="text"], .dark-mode input[type="password"] {
-            background-color: #555;
-            color: white;
-            border-color: #666;
-        }
-        .dark-mode .menu {
-            background-color: #444;
-            border-color: #555;
-        }
-        .dark-mode .menu-item {
-            color: #ddd;
-        }
-        .dark-mode .menu-item:hover {
-            color: #fff;
-        }
-        .dark-mode .back-btn {
-            color: #ddd;
-        }
-        .dark-mode .back-btn:hover {
-            color: #fff;
         }
     </style>
 </head>
@@ -214,22 +165,26 @@
         <div class="menu" id="menu">
             <div class="menu-item" id="account-delete">계정 탈퇴</div>
             <div class="menu-item" id="logout">로그아웃</div>
-            <div class="menu-item" id="mode-toggle">다크 모드로 전환</div>
             <div class="menu-item" id="about">웹페이지 설명</div>
+            <div class="menu-item" id="color-select">채팅창 색</div>
+            <div id="color-options">
+                <input type="color" id="custom-color" value="#ffffff">
+                <label for="custom-color">사용자 정의 색상</label>
+            </div>
+            <div class="menu-item" id="private-toggle">개인 메시지만 보기</div>
+            <div class="menu-item hidden" id="all-messages-toggle">모든 메시지 보기</div>
+            <div class="menu-item" id="function-description">기능 설명</div>
         </div>
         <div class="menu hidden" id="admin-menu">
             <div class="menu-item" id="delete-all">모든 채팅 삭제</div>
             <div class="menu-item" id="delete-latest">가장 최근 채팅 삭제</div>
-            <div class="menu-item" id="make-announcement">공지 올리기</div>
-            <div class="menu-item" id="delete-announcement">공지 삭제</div>
         </div>
-        <div id="announcement" class="hidden"></div>
         <div id="chat-box"></div>
         <input type="text" id="chat-input" placeholder="메시지를 입력하세요 (@username; 메시지 형식으로 개인 전송)">
         <button id="send-message">전송</button>
     </div>
 
-    <div id="version">v.1.0.1</div>
+    <div id="version">v.1.0.3</div>
 
     <script type="module">
         // Firebase 초기화
@@ -253,8 +208,6 @@
         let currentNickname = '';
         let currentUserId = '';
         let isAdmin = false;
-        let isDarkMode = false;
-        let isAnnouncementMode = false;
 
         // 요소 가져오기
         const mainContainer = document.getElementById('main-container');
@@ -274,23 +227,66 @@
         const adminMenu = document.getElementById('admin-menu');
         const accountDelete = document.getElementById('account-delete');
         const logout = document.getElementById('logout');
-        const modeToggle = document.getElementById('mode-toggle');
-        const makeAnnouncementBtn = document.getElementById('make-announcement');
-        const deleteAnnouncementBtn = document.getElementById('delete-announcement');
-        const announcementBox = document.getElementById('announcement');
         const about = document.getElementById('about');
-        
-        // 기존 동작하는 메뉴 및 기능 유지
-        about.addEventListener('click', () => {
-            alert('이 웹페이지는 실시간 채팅 서비스를 제공합니다. 사용자 등록 후 다양한 기능을 사용해 보세요.');
+        const colorSelect = document.getElementById('color-select');
+        const colorOptions = document.getElementById('color-options');
+        const customColor = document.getElementById('custom-color');
+        const deleteAllChats = document.getElementById('delete-all');
+        const deleteLatestChat = document.getElementById('delete-latest');
+        const privateToggle = document.getElementById('private-toggle');
+        const allMessagesToggle = document.getElementById('all-messages-toggle');
+        const functionDescription = document.getElementById('function-description');
+
+        let showPrivateMessages = false;
+
+        // 뒤로가기 버튼 기능
+        document.getElementById('login-back').addEventListener('click', () => {
+            loginContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
         });
 
-        // 다크 모드 토글 기능
-        modeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            isDarkMode = !isDarkMode;
-            modeToggle.textContent = isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환';
+        document.getElementById('signup-back').addEventListener('click', () => {
+            signupContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
         });
+
+        // 로그인 및 회원가입 버튼 기능
+        loginBtn.addEventListener('click', () => {
+            mainContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+        });
+
+        signupBtn.addEventListener('click', () => {
+            mainContainer.classList.add('hidden');
+            signupContainer.classList.remove('hidden');
+        });
+
+        // 메뉴 버튼 기능
+        menuBtn.addEventListener('click', () => {
+            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        // 관리자 메뉴 버튼 기능
+        adminMenuBtn.addEventListener('click', () => {
+            adminMenu.style.display = adminMenu.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        // 사용자 정의 채팅창 색상 설정
+        customColor.addEventListener('input', () => {
+            const selectedColor = customColor.value;
+            chatBox.style.backgroundColor = selectedColor;
+            chatBox.style.color = getTextColorBasedOnBg(selectedColor);
+        });
+
+        // 텍스트 색상 대비 자동 변경
+        function getTextColorBasedOnBg(bgColor) {
+            const rgb = parseInt(bgColor.slice(1), 16);
+            const r = (rgb >> 16) & 0xff;
+            const g = (rgb >> 8) & 0xff;
+            const b = (rgb >> 0) & 0xff;
+            const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            return luma > 128 ? 'black' : 'white';
+        }
 
         // 회원가입 처리
         signupSubmit.addEventListener('click', async () => {
@@ -373,7 +369,6 @@
                     }
 
                     loadChat();
-                    loadAnnouncement();
                 } else {
                     alert('아이디 또는 비밀번호가 잘못되었습니다.');
                 }
@@ -387,17 +382,7 @@
             const message = chatInput.value.trim();
             if (!message) return;
 
-            if (isAnnouncementMode && isAdmin) {
-                set(ref(database, 'announcement'), {
-                    message: message,
-                    timestamp: Date.now(),
-                }).then(() => {
-                    isAnnouncementMode = false;
-                    makeAnnouncementBtn.textContent = '공지 올리기';
-                    alert('공지가 등록되었습니다.');
-                    loadAnnouncement();
-                });
-            } else if (message.startsWith('@')) {
+            if (message.startsWith('@')) {
                 const parts = message.split(';', 2);
                 if (parts.length < 2) {
                     alert('메시지 형식이 잘못되었습니다. 예시: @nickname; 메시지 내용');
@@ -472,23 +457,8 @@
             });
         }
 
-        // 공지 로드하기
-        function loadAnnouncement() {
-            const announcementRef = ref(database, 'announcement');
-            onValue(announcementRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const announcementData = snapshot.val();
-                    announcementBox.innerHTML = `<strong>공지:</strong> ${announcementData.message}`;
-                    announcementBox.classList.remove('hidden');
-                } else {
-                    announcementBox.innerHTML = '';
-                    announcementBox.classList.add('hidden');
-                }
-            });
-        }
-
         // 모든 채팅 삭제
-        document.getElementById('delete-all').addEventListener('click', () => {
+        deleteAllChats.addEventListener('click', () => {
             remove(ref(database, 'messages')).then(() => {
                 alert('모든 채팅이 삭제되었습니다.');
                 chatBox.innerHTML = '';
@@ -498,7 +468,7 @@
         });
 
         // 가장 최근 채팅 삭제
-        document.getElementById('delete-latest').addEventListener('click', () => {
+        deleteLatestChat.addEventListener('click', () => {
             const messageRef = ref(database, 'messages');
             get(messageRef).then((snapshot) => {
                 let latestKey = null;
@@ -516,27 +486,44 @@
             });
         });
 
-        // 공지 올리기
-        makeAnnouncementBtn.addEventListener('click', () => {
-            if (isAnnouncementMode) {
-                isAnnouncementMode = false;
-                makeAnnouncementBtn.textContent = '공지 올리기';
-                alert('공지 모드가 비활성화되었습니다.');
-            } else {
-                isAnnouncementMode = true;
-                makeAnnouncementBtn.textContent = '공지 모드 활성화됨';
-                alert('공지 모드가 활성화되었습니다. 전송 버튼을 눌러 공지를 올리세요.');
-            }
+        // 개인 메시지 전용 토글
+        privateToggle.addEventListener('click', () => {
+            showPrivateMessages = true;
+            privateToggle.classList.add('hidden');
+            allMessagesToggle.classList.remove('hidden');
+            filterMessages();
         });
 
-        // 공지 삭제
-        deleteAnnouncementBtn.addEventListener('click', () => {
-            remove(ref(database, 'announcement')).then(() => {
-                alert('공지가 삭제되었습니다.');
-                announcementBox.classList.add('hidden');
-            }).catch((error) => {
-                alert('공지 삭제 실패: ' + error.message);
-            });
+        allMessagesToggle.addEventListener('click', () => {
+            showPrivateMessages = false;
+            allMessagesToggle.classList.add('hidden');
+            privateToggle.classList.remove('hidden');
+            filterMessages();
+        });
+
+        // 메시지 필터링
+        function filterMessages() {
+            const messageElements = chatBox.children;
+            for (let i = 0; i < messageElements.length; i++) {
+                const isPrivate = messageElements[i].classList.contains('private-message');
+                if (showPrivateMessages && !isPrivate) {
+                    messageElements[i].style.display = 'none';
+                } else {
+                    messageElements[i].style.display = 'block';
+                }
+            }
+        }
+
+        // 기능 설명
+        functionDescription.addEventListener('click', () => {
+            alert(`
+            - 닉네임 멘션: @nickname 형태로 멘션할 수 있으며, 멘션된 닉네임은 파란색으로 표시됩니다.
+            - 개인 전송: @nickname; 'content' 형식으로 보내면 해당 사용자에게만 메시지가 전달됩니다.
+            - 채팅창 색 변경: 메뉴에서 채팅창 색을 검정색, 하얀색, 하늘색 또는 사용자 정의 색상으로 변경할 수 있습니다.
+            - 개인 메시지만 보기: 메뉴에서 개인 메시지만 보거나 모든 메시지를 볼 수 있는 옵션이 있습니다.
+            - 관리자 기능: 관리자 메뉴를 통해 모든 채팅을 삭제하거나 최근 채팅 하나만 삭제할 수 있습니다.
+            - 본 웹페이지는 장정은 수령 동지와 소통하기 위해서 만들어졌습니다.
+            `);
         });
 
         // 계정 탈퇴 처리
@@ -545,7 +532,6 @@
                 alert('계정이 삭제되었습니다.');
                 chatContainer.classList.add('hidden');
                 mainContainer.classList.remove('hidden');
-                resetState();
             }).catch((error) => {
                 alert('계정 삭제 실패: ' + error.message);
             });
@@ -556,18 +542,8 @@
             alert('로그아웃 되었습니다.');
             chatContainer.classList.add('hidden');
             mainContainer.classList.remove('hidden');
-            adminMenuBtn.classList.add('hidden');
-            resetState();
+            adminMenuBtn.classList.add('hidden'); // 관리자 메뉴 숨기기
         });
-
-        // 상태 초기화
-        function resetState() {
-            currentNickname = '';
-            currentUserId = '';
-            isAdmin = false;
-            isAnnouncementMode = false;
-            makeAnnouncementBtn.textContent = '공지 올리기';
-        }
 
         // 6개월이 지난 계정 삭제
         function deleteOldAccounts() {
@@ -587,5 +563,3 @@
     </script>
 </body>
 </html>
-
-
