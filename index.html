@@ -13,6 +13,7 @@
             height: 100vh;
             background-color: #f7f7f7;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             display: flex;
@@ -24,6 +25,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
         .hidden {
             display: none;
@@ -37,6 +39,7 @@
             margin-bottom: 10px;
             padding: 15px;
             background-color: #f9f9f9;
+            transition: background-color 0.3s;
         }
         .back-btn {
             align-self: flex-start;
@@ -53,6 +56,7 @@
             color: white;
             padding: 8px 10px;
             border-radius: 8px;
+            transition: background-color 0.3s;
         }
         .admin-menu-btn {
             right: 90px;
@@ -70,58 +74,66 @@
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
         }
         .menu-item {
             margin: 5px 0;
             cursor: pointer;
             color: #333;
         }
-        .mention {
-            color: blue;
-        }
-        .private-message {
-            background-color: darkblue;
+        .dark-mode .container {
+            background-color: #333;
             color: white;
-            padding: 8px;
-            border-radius: 8px;
         }
-        .admin {
-            color: orange;
+        .dark-mode #chat-box {
+            background-color: #444;
+            color: white;
+        }
+        .dark-mode .menu-btn, .dark-mode .admin-menu-btn {
+            background-color: #666;
         }
         button {
-            background-color: #007bff;
+            background-color: #000;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #333;
         }
-        input[type="text"], input[type="password"], input[type="color"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 8px;
         }
-        #color-options {
-            display: none;
-            flex-direction: column;
-            padding-top: 5px;
-        }
-        #version {
+        #user-list {
             position: absolute;
-            left: 10px;
-            bottom: 10px;
-            color: #777;
-            font-size: 12px;
+            right: 10px;
+            top: 40px;
+            width: 200px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            text-align: left;
+        }
+        .username {
+            margin-bottom: 5px;
         }
         .timestamp {
             font-size: 10px;
             color: #999;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #ff0000;
         }
     </style>
 </head>
@@ -146,17 +158,6 @@
         <input type="text" id="signup-id" placeholder="아이디">
         <input type="password" id="signup-password" placeholder="비밀번호">
         <input type="text" id="signup-nickname" placeholder="닉네임">
-        <div>
-            <input type="checkbox" id="accept-all"> 모든 조건에 동의합니다.<br>
-            <input type="checkbox" id="term1"> 조건 1 <span class="view-details" data-details="조건(1) 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.">[자세히]</span><br>
-            <input type="checkbox" id="term2"> 조건 2 <span class="view-details" data-details="조건(2) 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term3"> 조건 3 <span class="view-details" data-details="조건(3) 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term4"> 조건 4 <span class="view-details" data-details="조건(4) 인터넷 윤리를 지키며 사용하십시오.">[자세히]</span><br>
-            <input type="checkbox" id="term5"> 조건 5 <span class="view-details" data-details="조건(5) 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term6"> 조건 6 <span class="view-details" data-details="조건(6) 본인은 이 모든 조건에 동의하며 건전하고 합법적으로 본 웹페이지를 사용할 것을 약속합니다.">[자세히]</span><br>
-            <input type="checkbox" id="term7"> 조건 7 <span class="view-details" data-details="조건(7) 모든 계정은 6개월 뒤 소멸됩니다.">[자세히]</span><br>
-            <input type="checkbox" id="term8"> 조건 8 <span class="view-details" data-details="조건(8) 사용자의 개인정보가 수집될 수 있습니다. 단 이 정보를 거래하지는 않습니다.">[자세히]</span><br>
-        </div>
         <button id="signup-submit">회원 가입</button>
     </div>
 
@@ -164,19 +165,13 @@
         <div class="menu-btn" id="menu-btn">메뉴</div>
         <div class="admin-menu-btn hidden" id="admin-menu-btn">관리자 메뉴</div>
         <div class="menu" id="menu">
+            <div class="menu-item" id="dark-mode-toggle">다크 모드</div>
             <div class="menu-item" id="account-delete">계정 탈퇴</div>
             <div class="menu-item" id="logout">로그아웃</div>
-            <div class="menu-item" id="about">웹페이지 설명</div>
-            <div class="menu-item" id="color-select">채팅창 색</div>
-            <div id="color-options">
-                <input type="color" id="custom-color" value="#ffffff">
-                <label for="custom-color">사용자 정의 색상</label>
-            </div>
-            <div class="menu-item" id="private-toggle">개인 메시지만 보기</div>
-            <div class="menu-item hidden" id="all-messages-toggle">모든 메시지 보기</div>
-            <div class="menu-item" id="function-description">기능 설명</div>
         </div>
         <div class="menu hidden" id="admin-menu">
+            <div class="menu-item" id="notice-toggle">공지 모드</div>
+            <div class="menu-item" id="delete-notice">공지 삭제</div>
             <div class="menu-item" id="delete-all">모든 채팅 삭제</div>
             <div class="menu-item" id="delete-latest">가장 최근 채팅 삭제</div>
         </div>
@@ -185,7 +180,11 @@
         <button id="send-message">전송</button>
     </div>
 
-    <div id="version">v.1.0.1</div>
+    <div id="user-list" class="hidden">
+        <h3>현재 접속자</h3>
+    </div>
+
+    <div id="version">v.1.0.2</div>
 
     <script type="module">
         // Firebase 초기화
@@ -228,28 +227,15 @@
         const adminMenu = document.getElementById('admin-menu');
         const accountDelete = document.getElementById('account-delete');
         const logout = document.getElementById('logout');
-        const about = document.getElementById('about');
-        const colorSelect = document.getElementById('color-select');
-        const colorOptions = document.getElementById('color-options');
-        const customColor = document.getElementById('custom-color');
+        const noticeToggle = document.getElementById('notice-toggle');
+        const deleteNotice = document.getElementById('delete-notice');
         const deleteAllChats = document.getElementById('delete-all');
         const deleteLatestChat = document.getElementById('delete-latest');
-        const privateToggle = document.getElementById('private-toggle');
-        const allMessagesToggle = document.getElementById('all-messages-toggle');
-        const functionDescription = document.getElementById('function-description');
 
         let showPrivateMessages = false;
-
-        // 뒤로가기 버튼 기능
-        document.getElementById('login-back').addEventListener('click', () => {
-            loginContainer.classList.add('hidden');
-            mainContainer.classList.remove('hidden');
-        });
-
-        document.getElementById('signup-back').addEventListener('click', () => {
-            signupContainer.classList.add('hidden');
-            mainContainer.classList.remove('hidden');
-        });
+        let isDarkMode = false;
+        let isNoticeMode = false;
+        let noticeMessage = null;
 
         // 로그인 및 회원가입 버튼 기능
         loginBtn.addEventListener('click', () => {
@@ -262,51 +248,138 @@
             signupContainer.classList.remove('hidden');
         });
 
-        // 메뉴 버튼 기능
-        menuBtn.addEventListener('click', () => {
-            menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+        // 뒤로가기 버튼 기능
+        document.getElementById('login-back').addEventListener('click', () => {
+            loginContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
         });
 
-        // 관리자 메뉴 버튼 기능
-        adminMenuBtn.addEventListener('click', () => {
-            adminMenu.style.display = adminMenu.style.display === 'none' ? 'flex' : 'none';
+        document.getElementById('signup-back').addEventListener('click', () => {
+            signupContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
         });
 
-        // 사용자 정의 채팅창 색상 설정
-        customColor.addEventListener('input', () => {
-            const selectedColor = customColor.value;
-            chatBox.style.backgroundColor = selectedColor;
-            chatBox.style.color = getTextColorBasedOnBg(selectedColor);
+        // 다크 모드 토글
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('dark-mode-toggle').textContent = isDarkMode ? '라이트 모드' : '다크 모드';
         });
 
-        // 텍스트 색상 대비 자동 변경
-        function getTextColorBasedOnBg(bgColor) {
-            const rgb = parseInt(bgColor.slice(1), 16);
-            const r = (rgb >> 16) & 0xff;
-            const g = (rgb >> 8) & 0xff;
-            const b = (rgb >> 0) & 0xff;
-            const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-            return luma > 128 ? 'black' : 'white';
+        // 공지 모드 활성화 및 비활성화
+        noticeToggle.addEventListener('click', () => {
+            isNoticeMode = !isNoticeMode;
+            alert(isNoticeMode ? '공지 모드 활성화' : '공지 모드 비활성화');
+        });
+
+        // 공지 삭제
+        deleteNotice.addEventListener('click', () => {
+            if (noticeMessage) {
+                noticeMessage.remove();
+                noticeMessage = null;
+                alert('공지 삭제 완료');
+            } else {
+                alert('삭제할 공지가 없습니다.');
+            }
+        });
+
+        // 채팅 메시지 전송
+        sendMessage.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            const messageElement = document.createElement('div');
+
+            if (isNoticeMode) {
+                if (noticeMessage) {
+                    noticeMessage.remove();
+                }
+                messageElement.classList.add('highlight');
+                noticeMessage = messageElement;
+            }
+
+            messageElement.textContent = message;
+            chatBox.appendChild(messageElement);
+            chatInput.value = '';
+        });
+
+        // 채팅 로드 및 메시지 업데이트
+        function loadChat() {
+            const messageRef = ref(database, 'messages');
+            onValue(messageRef, (snapshot) => {
+                chatBox.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const messageData = childSnapshot.val();
+                    const messageElement = document.createElement('div');
+
+                    if (messageData.isPrivate) {
+                        const isSender = messageData.user === currentUserId;
+                        const isReceiver = messageData.targetUserId === currentUserId;
+                        if (!isSender && !isReceiver) return;
+
+                        messageElement.classList.add('private-message');
+                    }
+
+                    const timestamp = new Date(messageData.timestamp);
+                    const formattedTime = `${timestamp.getFullYear()}/${(timestamp.getMonth() + 1).toString().padStart(2, '0')}/${timestamp.getDate().toString().padStart(2, '0')} ${timestamp.getHours().toString().padStart(2, '0')}:${timestamp.getMinutes().toString().padStart(2, '0')}`;
+
+                    messageElement.innerHTML = `<strong class="${messageData.user === 'admin' ? 'admin' : ''}">${messageData.nickname}:</strong> ${messageData.message} <span class="timestamp">${formattedTime}</span>`;
+                    chatBox.appendChild(messageElement);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
         }
+
+        // 모든 채팅 삭제
+        deleteAllChats.addEventListener('click', () => {
+            remove(ref(database, 'messages')).then(() => {
+                alert('모든 채팅이 삭제되었습니다.');
+                chatBox.innerHTML = '';
+            }).catch((error) => {
+                alert('채팅 삭제 실패: ' + error.message);
+            });
+        });
+
+        // 가장 최근 채팅 삭제
+        deleteLatestChat.addEventListener('click', () => {
+            const messageRef = ref(database, 'messages');
+            get(messageRef).then((snapshot) => {
+                let latestKey = null;
+                snapshot.forEach((childSnapshot) => {
+                    latestKey = childSnapshot.key;
+                });
+
+                if (latestKey) {
+                    remove(ref(database, 'messages/' + latestKey)).then(() => {
+                        alert('가장 최근 채팅이 삭제되었습니다.');
+                    }).catch((error) => {
+                        alert('최근 채팅 삭제 실패: ' + error.message);
+                    });
+                }
+            });
+        });
+
+        // 로그인된 사용자 표시
+        function updateUserList(usernames) {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '<h3>현재 접속자</h3>';
+            usernames.forEach(username => {
+                const userElement = document.createElement('div');
+                userElement.classList.add('username');
+                userElement.textContent = username;
+                userList.appendChild(userElement);
+            });
+            userList.classList.remove('hidden');
+        }
+
+        // 예시로 임시 사용자 목록 업데이트
+        updateUserList(['사용자1', '사용자2', '관리자']);
 
         // 회원가입 처리
         signupSubmit.addEventListener('click', async () => {
             const id = document.getElementById('signup-id').value;
             const password = document.getElementById('signup-password').value;
             const nickname = document.getElementById('signup-nickname').value;
-            const term1 = document.getElementById('term1').checked;
-            const term2 = document.getElementById('term2').checked;
-            const term3 = document.getElementById('term3').checked;
-            const term4 = document.getElementById('term4').checked;
-            const term5 = document.getElementById('term5').checked;
-            const term6 = document.getElementById('term6').checked;
-            const term7 = document.getElementById('term7').checked;
-            const term8 = document.getElementById('term8').checked;
-
-            if (!term1 || !term2 || !term3 || !term4 || !term5 || !term6 || !term7 || !term8) {
-                alert('모든 조건에 동의해야 합니다.');
-                return;
-            }
 
             const usersRef = ref(database, 'users');
             get(usersRef).then((snapshot) => {
@@ -376,174 +449,6 @@
             }).catch((error) => {
                 alert('로그인 실패: ' + error.message);
             });
-        });
-
-        // 채팅 메시지 전송
-        sendMessage.addEventListener('click', () => {
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            if (message.startsWith('@')) {
-                const parts = message.split(';', 2);
-                if (parts.length < 2) {
-                    alert('메시지 형식이 잘못되었습니다. 예시: @nickname; 메시지 내용');
-                    return;
-                }
-
-                const targetNickname = parts[0].trim().substring(1);
-                const content = parts[1].trim();
-
-                const usersRef = ref(database, 'users');
-                get(usersRef).then((snapshot) => {
-                    let targetUserId = null;
-                    snapshot.forEach((childSnapshot) => {
-                        if (childSnapshot.val().nickname === targetNickname) {
-                            targetUserId = childSnapshot.key;
-                        }
-                    });
-
-                    if (!targetUserId) {
-                        alert('해당 닉네임이 존재하지 않습니다.');
-                        return;
-                    }
-
-                    push(ref(database, 'messages'), {
-                        user: currentUserId,
-                        nickname: currentNickname || '익명',
-                        message: content,
-                        timestamp: Date.now(),
-                        isPrivate: true,
-                        targetUserId: targetUserId
-                    });
-
-                    chatInput.value = '';
-                });
-            } else {
-                push(ref(database, 'messages'), {
-                    user: currentUserId,
-                    nickname: currentNickname || '익명',
-                    message: message,
-                    timestamp: Date.now(),
-                    isPrivate: false
-                });
-
-                chatInput.value = '';
-            }
-        });
-
-        // 채팅 메시지 로드하기
-        function loadChat() {
-            const messageRef = ref(database, 'messages');
-            onValue(messageRef, (snapshot) => {
-                chatBox.innerHTML = '';
-                snapshot.forEach((childSnapshot) => {
-                    const messageData = childSnapshot.val();
-                    const messageElement = document.createElement('div');
-
-                    if (messageData.isPrivate) {
-                        const isSender = messageData.user === currentUserId;
-                        const isReceiver = messageData.targetUserId === currentUserId;
-                        if (!isSender && !isReceiver) return;
-
-                        messageElement.classList.add('private-message');
-                    }
-
-                    const timestamp = new Date(messageData.timestamp);
-                    const formattedTime = `${timestamp.getFullYear()}/${(timestamp.getMonth() + 1).toString().padStart(2, '0')}/${timestamp.getDate().toString().padStart(2, '0')} ${timestamp.getHours().toString().padStart(2, '0')}:${timestamp.getMinutes().toString().padStart(2, '0')}`;
-
-                    messageElement.innerHTML = `<strong class="${messageData.user === 'admin' ? 'admin' : ''}">${messageData.nickname}:</strong> ${messageData.message} <span class="timestamp">${formattedTime}</span>`;
-                    chatBox.appendChild(messageElement);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-
-        // 모든 채팅 삭제
-        deleteAllChats.addEventListener('click', () => {
-            remove(ref(database, 'messages')).then(() => {
-                alert('모든 채팅이 삭제되었습니다.');
-                chatBox.innerHTML = '';
-            }).catch((error) => {
-                alert('채팅 삭제 실패: ' + error.message);
-            });
-        });
-
-        // 가장 최근 채팅 삭제
-        deleteLatestChat.addEventListener('click', () => {
-            const messageRef = ref(database, 'messages');
-            get(messageRef).then((snapshot) => {
-                let latestKey = null;
-                snapshot.forEach((childSnapshot) => {
-                    latestKey = childSnapshot.key;
-                });
-
-                if (latestKey) {
-                    remove(ref(database, 'messages/' + latestKey)).then(() => {
-                        alert('가장 최근 채팅이 삭제되었습니다.');
-                    }).catch((error) => {
-                        alert('최근 채팅 삭제 실패: ' + error.message);
-                    });
-                }
-            });
-        });
-
-        // 개인 메시지 전용 토글
-        privateToggle.addEventListener('click', () => {
-            showPrivateMessages = true;
-            privateToggle.classList.add('hidden');
-            allMessagesToggle.classList.remove('hidden');
-            filterMessages();
-        });
-
-        allMessagesToggle.addEventListener('click', () => {
-            showPrivateMessages = false;
-            allMessagesToggle.classList.add('hidden');
-            privateToggle.classList.remove('hidden');
-            filterMessages();
-        });
-
-        // 메시지 필터링
-        function filterMessages() {
-            const messageElements = chatBox.children;
-            for (let i = 0; i < messageElements.length; i++) {
-                const isPrivate = messageElements[i].classList.contains('private-message');
-                if (showPrivateMessages && !isPrivate) {
-                    messageElements[i].style.display = 'none';
-                } else {
-                    messageElements[i].style.display = 'block';
-                }
-            }
-        }
-
-        // 기능 설명
-        functionDescription.addEventListener('click', () => {
-            alert(`
-            - 닉네임 멘션: @nickname 형태로 멘션할 수 있으며, 멘션된 닉네임은 파란색으로 표시됩니다.
-            - 개인 전송: @nickname; 'content' 형식으로 보내면 해당 사용자에게만 메시지가 전달됩니다.
-            - 채팅창 색 변경: 메뉴에서 채팅창 색을 검정색, 하얀색, 하늘색 또는 사용자 정의 색상으로 변경할 수 있습니다.
-            - 개인 메시지만 보기: 메뉴에서 개인 메시지만 보거나 모든 메시지를 볼 수 있는 옵션이 있습니다.
-            - 관리자 기능: 관리자 메뉴를 통해 모든 채팅을 삭제하거나 최근 채팅 하나만 삭제할 수 있습니다.
-            - 본 웹페이지는 장정은 수령 동지와 소통하기 위해서 만들어졌습니다.
-            `);
-        });
-
-        // 계정 탈퇴 처리
-        accountDelete.addEventListener('click', () => {
-            remove(ref(database, 'users/' + currentUserId)).then(() => {
-                alert('계정이 삭제되었습니다.');
-                chatContainer.classList.add('hidden');
-                mainContainer.classList.remove('hidden');
-            }).catch((error) => {
-                alert('계정 삭제 실패: ' + error.message);
-            });
-        });
-
-        // 로그아웃 처리
-        logout.addEventListener('click', () => {
-            alert('로그아웃 되었습니다.');
-            chatContainer.classList.add('hidden');
-            mainContainer.classList.remove('hidden');
-            adminMenuBtn.classList.add('hidden'); // 관리자 메뉴 숨기기
         });
 
         // 6개월이 지난 계정 삭제
