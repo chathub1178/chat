@@ -135,13 +135,16 @@
             font-weight: bold;
             color: #ff0000;
         }
-        #signup-terms {
-            text-align: left;
-            margin-top: 15px;
+        #version {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            color: #777;
+            font-size: 12px;
         }
-        .view-details {
-            cursor: pointer;
-            color: #007bff;
+        #function-description {
+            margin-top: 20px;
+            text-align: left;
         }
     </style>
 </head>
@@ -166,16 +169,13 @@
         <input type="text" id="signup-id" placeholder="아이디">
         <input type="password" id="signup-password" placeholder="비밀번호">
         <input type="text" id="signup-nickname" placeholder="닉네임">
-        <div id="signup-terms">
+        <div>
             <input type="checkbox" id="accept-all"> 모든 조건에 동의합니다.<br>
             <input type="checkbox" id="term1"> 조건 1 <span class="view-details" data-details="조건(1) 본 웹페이지에서 채팅으로 인해 발생하는 모든 문제는 본인이 감당합니다.">[자세히]</span><br>
             <input type="checkbox" id="term2"> 조건 2 <span class="view-details" data-details="조건(2) 본 웹페이지의 관리자는 어떤 문제가 발생하더라도 책임지지 않습니다.">[자세히]</span><br>
             <input type="checkbox" id="term3"> 조건 3 <span class="view-details" data-details="조건(3) 불법적인 행위를 할 시 모든 책임은 당사자에게 있습니다.">[자세히]</span><br>
             <input type="checkbox" id="term4"> 조건 4 <span class="view-details" data-details="조건(4) 인터넷 윤리를 지키며 사용하십시오.">[자세히]</span><br>
             <input type="checkbox" id="term5"> 조건 5 <span class="view-details" data-details="조건(5) 타인을 직접적으로 언급하지 마십시오. 이것은 모욕죄 및 명예훼손에 해당될 수 있습니다.">[자세히]</span><br>
-            <input type="checkbox" id="term6"> 조건 6 <span class="view-details" data-details="조건(6) 본인은 이 모든 조건에 동의하며 건전하고 합법적으로 본 웹페이지를 사용할 것을 약속합니다.">[자세히]</span><br>
-            <input type="checkbox" id="term7"> 조건 7 <span class="view-details" data-details="조건(7) 모든 계정은 6개월 뒤 소멸됩니다.">[자세히]</span><br>
-            <input type="checkbox" id="term8"> 조건 8 <span class="view-details" data-details="조건(8) 사용자의 개인정보가 수집될 수 있습니다. 단 이 정보를 거래하지는 않습니다.">[자세히]</span><br>
         </div>
         <button id="signup-submit">회원 가입</button>
     </div>
@@ -187,6 +187,7 @@
             <div class="menu-item" id="dark-mode-toggle">다크 모드</div>
             <div class="menu-item" id="account-delete">계정 탈퇴</div>
             <div class="menu-item" id="logout">로그아웃</div>
+            <div class="menu-item" id="function-description">웹사이트 설명</div>
         </div>
         <div class="menu hidden" id="admin-menu">
             <div class="menu-item" id="notice-toggle">공지 모드</div>
@@ -203,10 +204,10 @@
         <h3>현재 접속자</h3>
     </div>
 
-    <div id="version">v.1.0.2</div>
+    <div id="version">v.1.0.3</div>
 
     <script type="module">
-        // Firebase 초기화
+        // Firebase 초기화 및 기존 기능들
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, get, remove } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
 
@@ -425,6 +426,17 @@
         }
 
         setInterval(deleteOldAccounts, 24 * 60 * 60 * 1000);  // 하루에 한 번 실행
+
+        // 웹사이트 기능 설명
+        document.getElementById('function-description').addEventListener('click', () => {
+            alert(`
+            - 개인 메시지 전송: @nickname; 메시지 형식으로 보낼 수 있습니다.
+            - 다크 모드/라이트 모드 전환: 메뉴에서 모드를 선택할 수 있습니다.
+            - 공지 모드: 관리자는 공지 모드로 전환해 메시지를 상단에 고정할 수 있습니다.
+            - 채팅 삭제: 관리자는 모든 채팅을 삭제하거나 최근 채팅만 삭제할 수 있습니다.
+            - 인터넷 윤리: 채팅 시 모욕적인 언어나 불법적인 행위를 삼가야 합니다.
+            `);
+        });
     </script>
 </body>
 </html>
